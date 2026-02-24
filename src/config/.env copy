@@ -1,0 +1,9 @@
+  PORT =
+  MONGO_URI = 
+  DATABASE_NAME = ziplink
+  JWT_SECRET =
+  JWT_EXPIRES_IN =
+  REFRESH_TOKEN_SECRET=
+  NODE_ENV=development
+  COOKIE_DOMAIN=localhost
+  
