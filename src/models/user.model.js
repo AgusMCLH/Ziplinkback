@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema(
       select: false,
       minlength: 6,
     },
+    plan: {
+      type: String,
+      enum: ['standard', 'premium'],
+      default: 'standard',
+    },
   },
   {
     timestamps: true,

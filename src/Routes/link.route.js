@@ -1,24 +1,39 @@
-import CustomRouter from './custom/custom.router';
+import CustomRouter from './custom/custom.router.js';
+import linkService from '../service/links.service.js';
+import { createLinkSchema } from '../validations/link.validation.js';
 
 export default class LinkRouter extends CustomRouter {
   init() {
-    this.get('/links', ['PUBLIC'], [], async (req, res) => {
-      res.send('Get all links');
+    this.get('/', ['USERS'], [], async (req, res) => {
+      res.send('Get all ');
     });
 
-    this.post('/links', ['PUBLIC'], [], async (req, res) => {
-      res.send('Create a new link');
+    this.post('/', ['USERS'], [], async (req, res) => {
+      const { userId } = req;
+      const linkURL = req.body.linkURL || '';
+
+      const validation = createLinkSchema.safeParse({ linkURL });
+      if (!validation.success) {
+        return res.status(400).send('Formato de URL invalido');
+      }
+      const response = await linkService.createLink({
+        originalURL: validation.data.linkURL,
+        userID: userId,
+      });
+      console.log(response);
+
+      res.status(201).send({ userId, linkURL: validation.data.linkURL });
     });
 
-    this.get('/links/:id', ['PUBLIC'], [], async (req, res) => {
+    this.get('/:id', ['PUBLIC'], [], async (req, res) => {
       res.send(`Get link with id ${req.params.id}`);
     });
 
-    this.put('/links/:id', ['PUBLIC'], [], async (req, res) => {
+    this.put('/:id', ['PUBLIC'], [], async (req, res) => {
       res.send(`Update link with id ${req.params.id}`);
     });
 
-    this.delete('/links/:id', ['PUBLIC'], [], async (req, res) => {
+    this.delete('/:id', ['PUBLIC'], [], async (req, res) => {
       res.send(`Delete link with id ${req.params.id}`);
     });
   }

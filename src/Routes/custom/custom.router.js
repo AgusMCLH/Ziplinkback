@@ -83,7 +83,6 @@ export default class CustomRouter {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
 
       req.userId = payload.sub;
-      console.log(payload);
 
       return next(); //TODO: Implementar Roles para verificar si el usuario tiene acceso a la ruta, por ahora se permite el acceso a cualquier usuario autenticado
     } catch (err) {

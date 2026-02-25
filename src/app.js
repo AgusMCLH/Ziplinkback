@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import UserRouter from './Routes/user.route.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import LinkRouter from './Routes/link.route.js';
 
 const app = express();
 app.use(express.json());
@@ -28,7 +29,8 @@ mongoose
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
-app.use('/api', new UserRouter().getRouter());
+app.use('/api/users', new UserRouter().getRouter());
+app.use('/api/links', new LinkRouter().getRouter());
 
 app.listen(config.PORT, () => {
   console.log(`Server is running on port ${config.PORT}`);

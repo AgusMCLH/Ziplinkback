@@ -1,15 +1,19 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import UserDAO from './../DAO/Mongo/user.DAO.js';
+import userDAO from './../DAO/Mongo/user.DAO.js';
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_SECRET = process.env.JWT_SECRET;
 
-class AuthService {
+class UserService {
   constructor() {
     if (!JWT_SECRET) {
       throw new Error('JWT_SECRET not configured in environment variables');
     }
+  }
+
+  async getUserById(userId) {
+    return userDAO.findById(userId);
   }
 
   async register({ email, password }) {
@@ -23,7 +27,7 @@ class AuthService {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const exists = await UserDAO.existsByEmail(normalizedEmail);
+    const exists = await userDAO.existsByEmail(normalizedEmail);
     if (exists)
       return {
         errorBool: true,
@@ -33,16 +37,13 @@ class AuthService {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const user = await UserDAO.create({
+    const user = await userDAO.create({
       email: normalizedEmail,
       password: hashed,
     });
 
-    const token = this._signToken(user._id);
-
     return {
       user: { _id: user._id, email: user.email, createdAt: user.createdAt },
-      token,
     };
   }
 
@@ -61,7 +62,7 @@ class AuthService {
 
       const normalizedEmail = String(email).trim().toLowerCase();
 
-      const user = await UserDAO.findByEmail(normalizedEmail, {
+      const user = await userDAO.findByEmail(normalizedEmail, {
         includePassword: true,
       });
 
@@ -119,6 +120,6 @@ class AuthService {
   }
 }
 
-const authService = new AuthService();
+const userService = new UserService();
 
-export default authService;
+export default userService;

@@ -6,7 +6,7 @@ import validateEmailNPass from '../middlewares/emailPass.middleware.js';
 export default class UserRouter extends CustomRouter {
   init() {
     this.post(
-      '/users/register',
+      '/register',
       ['PUBLIC'],
       [validateEmailNPass(registerSchema)],
       async (req, res) => {
@@ -20,7 +20,7 @@ export default class UserRouter extends CustomRouter {
     );
 
     this.post(
-      '/users/login',
+      '/login',
       ['PUBLIC'],
       [validateEmailNPass(loginSchema)],
       async (req, res) => {
@@ -45,7 +45,7 @@ export default class UserRouter extends CustomRouter {
       },
     );
 
-    this.get('/users/logout', ['USER'], [], async (req, res) => {
+    this.get('/logout', ['USER'], [], async (req, res) => {
       res.clearCookie('access_token', {
         httpOnly: true,
         sameSite: 'lax',
