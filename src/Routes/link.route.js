@@ -21,8 +21,8 @@ export default class LinkRouter extends CustomRouter {
         userID: userId,
       });
       console.log(response);
-
-      res.status(201).send({ userId, linkURL: validation.data.linkURL });
+      const link = 'http://' + process.env.DOMAIN + '/r/' + response.shortCode;
+      res.status(201).send({ userId, link });
     });
 
     this.get('/:id', ['PUBLIC'], [], async (req, res) => {

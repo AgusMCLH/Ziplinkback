@@ -6,4 +6,6 @@
   REFRESH_TOKEN_SECRET=
   NODE_ENV=development
   COOKIE_DOMAIN=localhost
-  
+  DOMAIN=localhost:3000
+
+  DOMAIN=localhost:3000

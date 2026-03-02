@@ -8,12 +8,6 @@ const linkClickSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
     clickedAt: {
       type: Date,
       default: Date.now,
@@ -23,6 +17,12 @@ const linkClickSchema = new mongoose.Schema(
       type: String,
     },
     userAgent: {
+      type: String,
+    },
+    referer: {
+      type: String,
+    },
+    deviceType: {
       type: String,
     },
   },

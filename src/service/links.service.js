@@ -13,6 +13,18 @@ class LinkService {
     return shortCode;
   }
 
+  async getLinkByShortCode(shortCode) {
+    const link = await linkDAO.findByShortCode(shortCode);
+    if (!link) {
+      return {
+        errorBool: true,
+        errorStatus: 404,
+        errorMSG: 'Link not found',
+      };
+    }
+    return link;
+  }
+
   async createLink({ originalURL, userID }) {
     const user = await userService.getUserById(userID);
     if (!user) {

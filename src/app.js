@@ -5,6 +5,7 @@ import UserRouter from './Routes/user.route.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import LinkRouter from './Routes/link.route.js';
+import RedirectRouter from './Routes/redirect.route.js';
 
 const app = express();
 app.use(express.json());
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 });
 app.use('/api/users', new UserRouter().getRouter());
 app.use('/api/links', new LinkRouter().getRouter());
+app.use('/r', new RedirectRouter().getRouter());
 
 app.listen(config.PORT, () => {
   console.log(`Server is running on port ${config.PORT}`);
