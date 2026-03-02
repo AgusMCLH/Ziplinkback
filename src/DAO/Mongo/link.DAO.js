@@ -2,6 +2,8 @@ import Link from './../../models/link.model.js';
 
 class LinkDAO {
   async findByShortCode(shortCode) {
+    console.log('recibo ', shortCode);
+
     return Link.findOne({ shortCode }).exec();
   }
 
@@ -12,6 +14,14 @@ class LinkDAO {
       { originalUrl, user, totalClicks, shortCode: code, expireAt },
     ]);
     return doc;
+  }
+
+  async updateClickCount(linkId) {
+    return await Link.findByIdAndUpdate(
+      linkId,
+      { $inc: { totalClicks: 1 } },
+      { new: true },
+    ).exec();
   }
 }
 

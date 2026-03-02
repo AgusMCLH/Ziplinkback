@@ -64,45 +64,52 @@ export default class CustomRouter {
   }
 
   #handlerPolicies = (policies) => (req, res, next) => {
-    if (policies[0] === 'PUBLIC') {
-      //Si la Policy es PUBLIC, se permite el acceso
-      return next();
-    }
+    policies = policies.length === 0 ? ['PUBLIC'] : policies; //Si no se especifica ninguna politica, se asigna PUBLIC por defecto
+    if (policies[0] === 'PUBLIC') return next(); //Si la politica es PUBLIC, se permite el acceso sin verificar el token
+    let evaluated = true;
+    policies.forEach((policy) => {
+      switch (policy) {
+        case 'USERS':
+          try {
+            const token = req.cookies?.access_token;
+            if (!token) {
+              return (evaluated = false);
+            }
 
-    try {
-      const token = req.cookies?.access_token;
+            const payload = jwt.verify(token, process.env.JWT_SECRET);
+            req.userId = payload.sub;
 
-      if (!token) {
-        return res.status(401).json({
-          errorBool: true,
-          errorStatus: 401,
-          message: 'Unauthorized',
-        });
+            return;
+          } catch (err) {
+            return (evaluated = false);
+          }
+        case 'API':
+          const apiKey = req.headers['x-api-key'];
+
+          if (!apiKey || apiKey !== process.env.APIKEY) {
+            return (evaluated = false);
+          }
+          return;
       }
-
-      const payload = jwt.verify(token, process.env.JWT_SECRET);
-
-      req.userId = payload.sub;
-
-      return next(); //TODO: Implementar Roles para verificar si el usuario tiene acceso a la ruta, por ahora se permite el acceso a cualquier usuario autenticado
-    } catch (err) {
-      return res.status(401).json({
-        errorBool: true,
-        errorStatus: 401,
-        message: 'Unauthorized',
-      });
-    }
-
-    policies.forEach((politic) => {
-      if (politic === user.role?.toUpperCase()) {
-        req.user = user;
-        valid = true;
-      } //Se recorre el array de politicas y si el usuario tiene el rol, se permite el acceso
     });
+    if (!evaluated) {
+      return res.status(403).json({
+        status: 'Forbidden',
+        message: "You don't have access to this resource",
+      }); //Si no se cumple ninguna politica, se muestra un mensaje de error
+    }
+    next();
 
-    valid ? next() : console.log("Forbbidden, user doesn't have access"); //Si no tiene el rol, se muestra un mensaje de error
+    // policies.forEach((politic) => {
+    //   if (politic === user.role?.toUpperCase()) {
+    //     req.user = user;
+    //     valid = true;
+    //   } //Se recorre el array de politicas y si el usuario tiene el rol, se permite el acceso
+    // });
 
-    return;
+    // valid ? next() : console.log("Forbbidden, user doesn't have access"); //Si no tiene el rol, se muestra un mensaje de error
+
+    // return;
   };
 
   #handelerMiddleware = (middlewares) => (req, res, next) => {

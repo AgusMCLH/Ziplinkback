@@ -7,7 +7,7 @@ export default class UserRouter extends CustomRouter {
   init() {
     this.post(
       '/register',
-      ['PUBLIC'],
+      ['API'],
       [validateEmailNPass(registerSchema)],
       async (req, res) => {
         const { email, password } = await req?.body;
@@ -21,7 +21,7 @@ export default class UserRouter extends CustomRouter {
 
     this.post(
       '/login',
-      ['PUBLIC'],
+      ['API'],
       [validateEmailNPass(loginSchema)],
       async (req, res) => {
         const { email, password } = await req.body;
@@ -45,7 +45,7 @@ export default class UserRouter extends CustomRouter {
       },
     );
 
-    this.get('/logout', ['USER'], [], async (req, res) => {
+    this.get('/logout', ['API', 'USERS'], [], async (req, res) => {
       res.clearCookie('access_token', {
         httpOnly: true,
         sameSite: 'lax',

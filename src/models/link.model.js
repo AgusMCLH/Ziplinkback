@@ -12,6 +12,10 @@ const linkSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
     shortCode: {
       type: String,
       required: true,

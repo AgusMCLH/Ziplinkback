@@ -7,5 +7,4 @@
   NODE_ENV=development
   COOKIE_DOMAIN=localhost
   DOMAIN=localhost:3000
-
-  DOMAIN=localhost:3000
+  APIKEY=localhost:3000

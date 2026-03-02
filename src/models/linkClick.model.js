@@ -22,6 +22,9 @@ const linkClickSchema = new mongoose.Schema(
     referer: {
       type: String,
     },
+    browser: {
+      type: String,
+    },
     deviceType: {
       type: String,
     },
