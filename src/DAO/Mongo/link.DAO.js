@@ -1,3 +1,4 @@
+import { length } from 'zod';
 import Link from './../../models/link.model.js';
 
 class LinkDAO {
@@ -14,6 +15,17 @@ class LinkDAO {
       { originalUrl, user, totalClicks, shortCode: code, expireAt },
     ]);
     return doc;
+  }
+
+  async getLinkByLinkIDandUserID(linkId, userID) {
+    let result = await Link.findOne({
+      originalUrl: { $regex: linkId, $options: 'i' },
+      user: userID,
+    }).exec();
+    if (result === null || result === undefined || result === false) {
+      result = false;
+    }
+    return result;
   }
 
   async updateClickCount(linkId) {

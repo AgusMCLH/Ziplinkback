@@ -55,8 +55,13 @@ class LinkService {
     );
     return result;
   }
+
   async incrementClickCount(linkId) {
     return await linkDAO.updateClickCount(linkId);
+  }
+
+  async getLinkByLinkIDandUserID(linkId, userID) {
+    return await linkDAO.getLinkByLinkIDandUserID(linkId, userID);
   }
 }
 

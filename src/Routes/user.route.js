@@ -33,7 +33,7 @@ export default class UserRouter extends CustomRouter {
           httpOnly: true,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',
-          maxAge: 3 * 60 * 1000, // 3 minutos
+          maxAge: 15 * 60 * 1000, // 3 minutos
           path: '/',
         });
 

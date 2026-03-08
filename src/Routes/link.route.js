@@ -12,12 +12,26 @@ export default class LinkRouter extends CustomRouter {
       const { userId } = req;
       const linkURL = req.body.linkURL || '';
 
-      const validation = createLinkSchema.safeParse({ linkURL });
-      if (!validation.success) {
+      const isUrlValid = createLinkSchema.safeParse({ linkURL });
+      if (!isUrlValid.success) {
         return res.status(400).send('Formato de URL invalido');
       }
+
+      const urlAlreadyExists = await linkService.getLinkByLinkIDandUserID(
+        linkURL,
+        userId,
+      );
+      if (urlAlreadyExists) {
+        return res.status(201).send({
+          userId: urlAlreadyExists.user,
+          link:
+            'http://' + process.env.DOMAIN + '/r/' + urlAlreadyExists.shortCode,
+          dupl: true,
+        });
+      }
+
       const response = await linkService.createLink({
-        originalURL: validation.data.linkURL,
+        originalURL: isUrlValid.data.linkURL,
         userID: userId,
       });
       console.log(response);
