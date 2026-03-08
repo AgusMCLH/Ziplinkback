@@ -6,6 +6,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import LinkRouter from './Routes/link.route.js';
 import RedirectRouter from './Routes/redirect.route.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import SwaggerOptions from './config/docs.js';
 
 const app = express();
 app.use(express.json());
@@ -27,9 +30,9 @@ mongoose
   .then(() => console.log('Database connected!'))
   .catch((err) => console.log(err));
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+const openapiSpecification = swaggerJsdoc(SwaggerOptions);
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use('/api/users', new UserRouter().getRouter());
 app.use('/api/links', new LinkRouter().getRouter());
 app.use('/r', new RedirectRouter().getRouter());
