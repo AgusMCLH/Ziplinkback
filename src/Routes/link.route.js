@@ -39,12 +39,26 @@ export default class LinkRouter extends CustomRouter {
       res.status(201).send({ userId, link });
     });
 
-    this.get('/:id', ['PUBLIC'], [], async (req, res) => {
-      res.send(`Get link with id ${req.params.id}`);
-    });
+    this.put('/', ['USERS'], [], async (req, res) => {
+      const { userId } = req;
+      const { updateLinkId, active } = req.body;
+      console.log(userId, updateLinkId, active);
 
-    this.put('/:id', ['PUBLIC'], [], async (req, res) => {
-      res.send(`Update link with id ${req.params.id}`);
+      const urlToUpdate = await linkService.getLinkById(updateLinkId);
+
+      const isUrlOwned = await linkService.getLinkByLinkIDandUserID(
+        urlToUpdate.originalUrl,
+        userId,
+      );
+      console.log(isUrlOwned);
+
+      if (!isUrlOwned) {
+        return res.status(404).send('Link not found');
+      }
+      const updatedLink = await linkService.updateLink(updateLinkId, {
+        active: active,
+      });
+      res.send(updatedLink);
     });
 
     this.delete('/:id', ['PUBLIC'], [], async (req, res) => {

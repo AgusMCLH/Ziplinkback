@@ -60,8 +60,16 @@ class LinkService {
     return await linkDAO.updateClickCount(linkId);
   }
 
+  async getLinkById(id) {
+    return await linkDAO.getLinkById(id);
+  }
+
   async getLinkByLinkIDandUserID(linkId, userID) {
     return await linkDAO.getLinkByLinkIDandUserID(linkId, userID);
+  }
+
+  async updateLink(linkId, updateData) {
+    return await linkDAO.updateLink(linkId, updateData);
   }
 }
 

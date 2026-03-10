@@ -17,6 +17,10 @@ class LinkDAO {
     return doc;
   }
 
+  async getLinkById(id) {
+    return Link.findById(id).exec();
+  }
+
   async getLinkByLinkIDandUserID(linkId, userID) {
     let result = await Link.findOne({
       originalUrl: { $regex: linkId, $options: 'i' },
@@ -29,11 +33,13 @@ class LinkDAO {
   }
 
   async updateClickCount(linkId) {
-    return await Link.findByIdAndUpdate(
-      linkId,
-      { $inc: { totalClicks: 1 } },
-      { new: true },
-    ).exec();
+    return await this.updateLink(linkId, { $inc: { totalClicks: 1 } });
+  }
+
+  async updateLink(linkId, updateData) {
+    return await Link.findByIdAndUpdate(linkId, updateData, {
+      new: true,
+    }).exec();
   }
 }
 
