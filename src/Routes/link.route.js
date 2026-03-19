@@ -14,7 +14,11 @@ export default class LinkRouter extends CustomRouter {
 
       const isUrlValid = createLinkSchema.safeParse({ linkURL });
       if (!isUrlValid.success) {
-        return res.status(400).send('Formato de URL invalido');
+        return res.status(400).send({
+          errorBool: true,
+          errorStatus: 400,
+          message: 'Formato de URL invalido',
+        });
       }
 
       const urlAlreadyExists = await linkService.getLinkByLinkIDandUserID(
@@ -42,18 +46,26 @@ export default class LinkRouter extends CustomRouter {
     this.put('/', ['USERS'], [], async (req, res) => {
       const { userId } = req;
       const { updateLinkId, active } = req.body;
-      console.log(userId, updateLinkId, active);
 
       const urlToUpdate = await linkService.getLinkById(updateLinkId);
-
+      if (!urlToUpdate) {
+        return res.status(404).send({
+          errorBool: true,
+          errorStatus: 404,
+          message: 'Link not found',
+        });
+      }
       const isUrlOwned = await linkService.getLinkByLinkIDandUserID(
         urlToUpdate.originalUrl,
         userId,
       );
-      console.log(isUrlOwned);
 
       if (!isUrlOwned) {
-        return res.status(404).send('Link not found');
+        return res.status(404).send({
+          errorBool: true,
+          errorStatus: 404,
+          message: 'Link not found',
+        });
       }
       const updatedLink = await linkService.updateLink(updateLinkId, {
         active: active,
@@ -61,7 +73,7 @@ export default class LinkRouter extends CustomRouter {
       res.send(updatedLink);
     });
 
-    this.delete('/:id', ['PUBLIC'], [], async (req, res) => {
+    this.delete('/', ['PUBLIC'], [], async (req, res) => {
       res.send(`Delete link with id ${req.params.id}`);
     });
   }

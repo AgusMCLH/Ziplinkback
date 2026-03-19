@@ -1,3 +1,5 @@
+import { required } from 'zod/mini';
+
 const SwaggerOptions = {
   definition: {
     openapi: '3.1.0',
@@ -402,47 +404,17 @@ const SwaggerOptions = {
                 'application/json': {
                   schema: {
                     type: 'string',
-                    example: 'Formato de URL invalido',
+                    example: {
+                      errorBool: true,
+                      errorStatus: 400,
+                      message: 'Formato de URL inválido',
+                    },
                   },
                 },
               },
             },
             401: {
               description: 'No autenticado',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/ErrorResponse' },
-                },
-              },
-            },
-          },
-        },
-      },
-
-      '/api/links/{id}': {
-        get: {
-          tags: ['Links'],
-          summary: 'Obtener un link por ID',
-          parameters: [
-            {
-              name: 'id',
-              in: 'path',
-              required: true,
-              schema: { type: 'string', example: '699f3755873459cbd1964fce' },
-              description: 'ID del link',
-            },
-          ],
-          responses: {
-            200: {
-              description: 'Link encontrado',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/Link' },
-                },
-              },
-            },
-            404: {
-              description: 'Link no encontrado',
               content: {
                 'application/json': {
                   schema: { $ref: '#/components/schemas/ErrorResponse' },
@@ -493,7 +465,14 @@ const SwaggerOptions = {
               description: 'Link no encontrado o no pertenece al usuario',
               content: {
                 'application/json': {
-                  schema: { type: 'string', example: 'Link not found' },
+                  schema: {
+                    type: 'string',
+                    example: {
+                      errorBool: true,
+                      errorStatus: 404,
+                      message: 'Link not found',
+                    },
+                  },
                 },
               },
             },
@@ -533,6 +512,40 @@ const SwaggerOptions = {
                       },
                     },
                   },
+                },
+              },
+            },
+            404: {
+              description: 'Link no encontrado',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ErrorResponse' },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      '/api/links/{id}': {
+        get: {
+          tags: ['Links'],
+          summary: 'Obtener un link por ID',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: { type: 'string', example: '699f3755873459cbd1964fce' },
+              description: 'ID del link',
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Link encontrado',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Link' },
                 },
               },
             },
