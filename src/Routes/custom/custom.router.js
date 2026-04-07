@@ -99,17 +99,6 @@ export default class CustomRouter {
       }); //Si no se cumple ninguna politica, se muestra un mensaje de error
     }
     next();
-
-    // policies.forEach((politic) => {
-    //   if (politic === user.role?.toUpperCase()) {
-    //     req.user = user;
-    //     valid = true;
-    //   } //Se recorre el array de politicas y si el usuario tiene el rol, se permite el acceso
-    // });
-
-    // valid ? next() : console.log("Forbbidden, user doesn't have access"); //Si no tiene el rol, se muestra un mensaje de error
-
-    // return;
   };
 
   #handelerMiddleware = (middlewares) => (req, res, next) => {

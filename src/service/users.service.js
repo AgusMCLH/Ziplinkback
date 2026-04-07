@@ -48,9 +48,6 @@ class UserService {
   }
 
   async login({ email, password }) {
-    if (!this.#validateEmail(email)) {
-      return { errorBool: true, error: 'Invalid email format' };
-    }
     try {
       if (!JWT_SECRET) {
         return {
@@ -108,15 +105,28 @@ class UserService {
     }
   }
 
+  async getUserByJWTToken(token) {
+    try {
+      const keysToRemove = ['password', '__v', 'createdAt', 'updatedAt', '_id'];
+      const payload = jwt.verify(token, JWT_SECRET);
+      let user = await userDAO.findById(payload.sub);
+      if (user) {
+        user = user.toObject();
+        keysToRemove.forEach((key) => {
+          delete user[key];
+        });
+      }
+      console.log(user);
+
+      return user;
+    } catch (err) {
+      return null;
+    }
+  }
+
   #validateEmail(email) {
     const re = /^\S+@\S+\.\S+$/;
     return re.test(email);
-  }
-
-  _signToken(userId) {
-    return jwt.sign({ sub: String(userId) }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-    });
   }
 }
 

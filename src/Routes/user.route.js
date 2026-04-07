@@ -27,6 +27,8 @@ export default class UserRouter extends CustomRouter {
       [validateEmailNPass(loginSchema)],
       async (req, res) => {
         const { email, password } = await req.body;
+        console.log(email, password);
+
         const result = await userService.login({ email, password });
         if (result.errorBool) {
           return res.status(result.errorStatus).json(result);
@@ -35,7 +37,7 @@ export default class UserRouter extends CustomRouter {
           httpOnly: true,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',
-          maxAge: 15 * 60 * 1000, // 3 minutos
+          maxAge: 15 * 60 * 1000, // 15 minutes
           path: '/',
         });
 
@@ -47,11 +49,27 @@ export default class UserRouter extends CustomRouter {
       },
     );
 
+    this.post('/verify-token', ['API'], [], async (req, res) => {
+      const token = req.body.token;
+      if (!token) {
+        return res
+          .status(400)
+          .json({ errorBool: true, message: 'Token is required' });
+      }
+      const user = await userService.getUserByJWTToken(token);
+      if (!user) {
+        return res
+          .status(401)
+          .json({ errorBool: true, message: 'Invalid token' });
+      }
+      res.json({ errorBool: false, data: { user } });
+    });
+
     this.get('/logout', ['API', 'USERS'], [], async (req, res) => {
       res.clearCookie('access_token', {
         httpOnly: true,
         sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         path: '/',
       });
       res.json({ status: 'success', message: 'Logged out successfully' });
