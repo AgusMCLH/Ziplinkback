@@ -2,11 +2,8 @@ import mongoose from 'mongoose';
 import User from './../../models/user.model.js';
 
 class UserDAO {
-  async create({ email, password }, { session } = {}) {
-    const [doc] = await User.create(
-      [{ email, password }],
-      session ? { session } : undefined,
-    );
+  async create({ email, password, name } = {}) {
+    const [doc] = await User.create([{ email, password, name }]);
     return doc;
   }
 
