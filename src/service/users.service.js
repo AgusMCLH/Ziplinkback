@@ -49,14 +49,6 @@ class UserService {
 
   async login({ email, password }) {
     try {
-      if (!JWT_SECRET) {
-        return {
-          errorBool: true,
-          errorStatus: 500,
-          message: 'JWT_SECRET not configured',
-        };
-      }
-
       const normalizedEmail = String(email).trim().toLowerCase();
 
       const user = await userDAO.findByEmail(normalizedEmail, {
@@ -67,7 +59,7 @@ class UserService {
         return {
           errorBool: true,
           errorStatus: 401,
-          message: 'Invalid credentials',
+          errorMSG: 'Invalid credentials',
         };
       }
 
@@ -76,17 +68,18 @@ class UserService {
         return {
           errorBool: true,
           errorStatus: 401,
-          message: 'Invalid credentials',
+          errorMSG: 'Invalid credentials',
         };
       }
 
       const token = jwt.sign({ sub: String(user._id) }, JWT_SECRET, {
         expiresIn: JWT_EXPIRES_IN,
+        algorithm: 'HS256',
       });
 
       return {
         errorBool: false,
-        message: 'Login success',
+        errorMSG: 'Login success',
         data: {
           user: {
             _id: user._id,
@@ -100,7 +93,7 @@ class UserService {
       return {
         errorBool: true,
         errorStatus: 500,
-        message: 'Internal server error',
+        errorMSG: 'Internal server error',
       };
     }
   }
@@ -108,14 +101,20 @@ class UserService {
   async getUserByJWTToken(token) {
     try {
       const keysToRemove = ['password', '__v', 'createdAt', 'updatedAt', '_id'];
-      const payload = jwt.verify(token, JWT_SECRET);
+      const payload = jwt.verify(token, JWT_SECRET, {
+        algorithms: ['HS256'],
+      });
       let user = await userDAO.findById(payload.sub);
-      if (user) {
-        user = user.toObject();
-        keysToRemove.forEach((key) => {
-          delete user[key];
-        });
+
+      if (!user) {
+        return null;
       }
+
+      user = user.toObject();
+      keysToRemove.forEach((key) => {
+        delete user[key];
+      });
+
       console.log(user);
 
       return user;
