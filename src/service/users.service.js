@@ -16,7 +16,7 @@ class UserService {
     return userDAO.findById(userId);
   }
 
-  async register({ email, password }) {
+  async register({ email, password, name }) {
     if (!this.#validateEmail(email)) {
       return {
         errorBool: true,
@@ -40,10 +40,16 @@ class UserService {
     const user = await userDAO.create({
       email: normalizedEmail,
       password: hashed,
+      name: name ? String(name).trim() : 'NO NAME',
     });
 
     return {
-      user: { _id: user._id, email: user.email, createdAt: user.createdAt },
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+      },
     };
   }
 

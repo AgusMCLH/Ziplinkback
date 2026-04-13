@@ -10,10 +10,9 @@ export default class UserRouter extends CustomRouter {
       ['API'],
       [validateEmailNPass(registerSchema)],
       async (req, res) => {
-        const { email, password } = await req?.body;
-        console.log(email, password);
-
-        const result = await userService.register({ email, password });
+        const { email, password, name } = await req?.body;
+        console.log(email, password, name);
+        const result = await userService.register({ email, password, name });
         if (result.errorBool) {
           return res.status(result.errorStatus).json(result);
         }
