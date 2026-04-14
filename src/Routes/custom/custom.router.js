@@ -71,7 +71,9 @@ export default class CustomRouter {
       switch (policy) {
         case 'USERS':
           try {
-            const token = req.cookies?.access_token;
+            const token =
+              req.cookies?.access_token ||
+              req.headers?.authorization?.split(' ')[1]; //Se busca el token en las cookies o en los headers
             if (!token) {
               return (evaluated = false);
             }
