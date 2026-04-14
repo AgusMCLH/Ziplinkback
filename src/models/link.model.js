@@ -6,6 +6,10 @@ const linkSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    name: {
+      type: String,
+      default: 'NO NAME',
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

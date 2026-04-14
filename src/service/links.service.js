@@ -13,6 +13,21 @@ class LinkService {
     return shortCode;
   }
 
+  async getLinksByUserID(userID) {
+    let links = await linkDAO.getLinksByUserID(userID);
+    links = links.map((link, i) => ({
+      id: i + 1,
+      _id: link._id,
+      name: link.name,
+      shortCode: link.shortCode,
+      status: link.active ? 'Active' : 'Expired',
+      totalClicks: link.totalClicks,
+      expirationDate: link.expireAt ? link.expireAt.toLocaleDateString() : null, //DD/MM/YYYY
+      originalURL: link.originalUrl,
+    }));
+    return links;
+  }
+
   async getLinkByShortCode(shortCode) {
     console.log('Recibo code ', shortCode);
 

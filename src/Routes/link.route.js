@@ -5,7 +5,11 @@ import { createLinkSchema } from '../validations/link.validation.js';
 export default class LinkRouter extends CustomRouter {
   init() {
     this.get('/', ['USERS'], [], async (req, res) => {
-      res.send('Get all ');
+      const { userId } = req;
+      console.log(userId);
+
+      const links = await linkService.getLinksByUserID(userId);
+      res.send(links);
     });
 
     this.post('/', ['USERS'], [], async (req, res) => {

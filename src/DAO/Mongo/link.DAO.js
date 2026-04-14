@@ -21,6 +21,10 @@ class LinkDAO {
     return Link.findById(id).exec();
   }
 
+  async getLinksByUserID(userID) {
+    return Link.find({ user: userID }).exec();
+  }
+
   async getLinkByLinkIDandUserID(linkId, userID) {
     let result = await Link.findOne({
       originalUrl: { $regex: linkId, $options: 'i' },
