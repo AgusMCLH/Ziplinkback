@@ -8,6 +8,7 @@ import LinkRouter from './Routes/link.route.js';
 import RedirectRouter from './Routes/redirect.route.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import LinkClickRouter from './Routes/linkClick.route.js';
 import SwaggerOptions from './config/docs.js';
 
 const app = express();
@@ -37,6 +38,7 @@ const openapiSpecification = swaggerJsdoc(SwaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use('/api/users', new UserRouter().getRouter());
 app.use('/api/links', new LinkRouter().getRouter());
+app.use('/api/linkdetails', new LinkClickRouter().getRouter());
 app.use('/r', new RedirectRouter().getRouter());
 
 app.listen(config.PORT, () => {

@@ -6,8 +6,6 @@ export default class LinkRouter extends CustomRouter {
   init() {
     this.get('/', ['USERS'], [], async (req, res) => {
       const { userId } = req;
-      console.log(userId);
-
       const links = await linkService.getLinksByUserID(userId);
       res.send(links);
     });
