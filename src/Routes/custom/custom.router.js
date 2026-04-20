@@ -86,10 +86,7 @@ export default class CustomRouter {
             return (evaluated = false);
           }
         case 'API':
-          console.log('AIP');
-
           const apiKey = req.headers['x-api-key'];
-          console.log(apiKey, process.env.APIKEY);
 
           if (!apiKey || apiKey !== process.env.APIKEY) {
             return (evaluated = false);

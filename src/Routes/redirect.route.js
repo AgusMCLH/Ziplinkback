@@ -7,20 +7,38 @@ export default class RedirectRouter extends CustomRouter {
   init() {
     this.get('/:id', ['API'], [], async (req, res) => {
       const { id } = req.params;
-      const referer = req.query.referer || 'None';
-      console.log(req.params);
+      const response = await linkService.getLinkByShortCode(id);
+      if (response.errorBool) {
+        return res
+          .status(response.errorStatus)
+          .json({ error: true, messagge: response.errorMSG });
+      }
+
+      // await linkClickService.logClick(response._id, result, referer, req.ip);
+      res.status(200).json({
+        originalUrl: response.originalUrl,
+      });
+    });
+
+    this.post('/:id', ['API'], [], async (req, res) => {
+      const { id } = req.params;
+      const referer = req.body?.referer || 'None';
+      console.log(referer);
+
       const userAgent = req.headers['user-agent'] || '';
       const parser = new UAParser(userAgent);
       const result = parser.getResult();
       if (!result) {
         return res.status(400).send('Invalid user agent');
       }
+      console.log(result);
+
       const response = await linkService.getLinkByShortCode(id);
       if (response.errorBool) {
         return res.status(response.errorStatus).send(response.errorMSG);
       }
 
-      await linkClickService.logClick(response._id, result, referer, req.ip);
+      // await linkClickService.logClick(response._id, result, referer, req.ip);
       res.status(200).json({
         originalUrl: response.originalUrl,
         userAgent: result,

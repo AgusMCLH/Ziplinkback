@@ -29,10 +29,7 @@ class LinkService {
   }
 
   async getLinkByShortCode(shortCode) {
-    console.log('Recibo code ', shortCode);
-
     const link = await linkDAO.findByShortCode(shortCode);
-    console.log(link);
 
     if (!link) {
       return {

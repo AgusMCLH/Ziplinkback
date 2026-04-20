@@ -13,6 +13,7 @@ export default class LinkRouter extends CustomRouter {
     this.post('/', ['USERS'], [], async (req, res) => {
       const { userId } = req;
       const linkURL = req.body.linkURL || '';
+      console.log('link: ', linkURL);
 
       const isUrlValid = createLinkSchema.safeParse({ linkURL });
       if (!isUrlValid.success) {

@@ -121,8 +121,6 @@ class UserService {
         delete user[key];
       });
 
-      console.log(user);
-
       return user;
     } catch (err) {
       return null;
