@@ -2,20 +2,43 @@ import CustomRouter from './custom/custom.router.js';
 import linkService from '../service/links.service.js';
 import linkClickService from '../service/linkClick.service.js';
 import { UAParser } from 'ua-parser-js';
+import userService from '../service/users.service.js';
 
 export default class RedirectRouter extends CustomRouter {
   init() {
     this.get('/:id', ['API'], [], async (req, res) => {
       const { id } = req.params;
       const response = await linkService.getLinkByShortCode(id);
+      const user = await userService.getUserById(response.user);
       if (response.errorBool) {
         return res
           .status(response.errorStatus)
-          .json({ error: true, messagge: response.errorMSG });
+          .json({ error: true, messagge: response.errorMSG, code: 'LINK-404' });
+      }
+      if (!response.active) {
+        console.log('El link no esta activo \n', {
+          error: true,
+          messagge: response.errorMSG,
+          code: 'LINK-410',
+          linkName: response.name,
+          userName: user.name,
+        });
+
+        return res.status(410).json({
+          error: true,
+          messagge: response.errorMSG,
+          code: 'LINK-410',
+          linkName: response.name,
+          userName: user.name,
+        });
       }
 
-      // await linkClickService.logClick(response._id, result, referer, req.ip);
       res.status(200).json({
+        error: false,
+        messagge: null,
+        code: null,
+        linkName: response.name,
+        userName: user.name,
         originalUrl: response.originalUrl,
       });
     });
