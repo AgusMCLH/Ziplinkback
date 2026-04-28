@@ -41,7 +41,7 @@ class LinkService {
     return link;
   }
 
-  async createLink({ originalURL, userID }) {
+  async createLink({ originalURL, name, status, userID }) {
     const user = await userService.getUserById(userID);
     if (!user) {
       return {
@@ -60,6 +60,8 @@ class LinkService {
     }
     const result = await linkDAO.createLink(
       originalURL,
+      name,
+      status,
       userID,
       0,
       code,

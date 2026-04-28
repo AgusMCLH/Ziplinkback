@@ -6,9 +6,27 @@ class LinkDAO {
     return Link.findOne({ shortCode }).exec();
   }
 
-  async createLink(originalUrl, user, totalClicks, code, expireAt) {
+  async createLink(
+    originalUrl,
+    name,
+    status,
+    user,
+    totalClicks,
+    code,
+    expireAt,
+  ) {
+    console.log('status', status);
+
     const [doc] = await Link.create([
-      { originalUrl, user, totalClicks, shortCode: code, expireAt },
+      {
+        originalUrl,
+        name,
+        active: status,
+        user,
+        totalClicks,
+        shortCode: code,
+        expireAt,
+      },
     ]);
     return doc;
   }
