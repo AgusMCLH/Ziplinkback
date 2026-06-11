@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userDAO from './../DAO/Mongo/user.DAO.js';
+import sessionService from './sessions.service.js';
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -78,11 +79,22 @@ class UserService {
         };
       }
 
-      const token = jwt.sign({ sub: String(user._id) }, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-        algorithm: 'HS256',
-      });
+      const session = await sessionService.createSession({ userID: user._id });
 
+      const token = jwt.sign({ sub: String(user._id) }, JWT_SECRET, {
+        //
+        expiresIn: JWT_EXPIRES_IN, //
+        algorithm: 'HS256', //
+      }); //BORRAR CUANDO TERMINE LA MIGRACION
+      const accessToken = jwt.sign(
+        { sub: String(user._id), sessionId: String(session.sessionObject._id) },
+        JWT_SECRET,
+        {
+          //
+          expiresIn: '15m', //
+          algorithm: 'HS256', //
+        },
+      );
       return {
         errorBool: false,
         errorMSG: 'Login success',
@@ -92,7 +104,9 @@ class UserService {
             email: user.email,
             createdAt: user.createdAt,
           },
-          token,
+          token, //
+          sessionToken: session.sessionToken,
+          accessToken,
         },
       };
     } catch (err) {

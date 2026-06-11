@@ -74,9 +74,10 @@ export default class CustomRouter {
             const token =
               req.cookies?.access_token ||
               req.headers?.authorization?.split(' ')[1]; //Se busca el token en las cookies o en los headers
-            if (!token) {
-              return (evaluated = false);
-            }
+            if (req.originalUrl === '/api/users/logout')
+              if (!token) {
+                return (evaluated = false);
+              }
 
             const payload = jwt.verify(token, process.env.JWT_SECRET);
             req.userId = payload.sub;
@@ -95,6 +96,13 @@ export default class CustomRouter {
       }
     });
     if (!evaluated) {
+      console.log('Conection tried failed', {
+        url: req.originalUrl,
+        method: req.method,
+        headers: req.headers,
+        cookies: req.cookies,
+      });
+      req.cookies.accessToken = token;
       return res.status(403).json({
         status: 'Forbidden',
         message: "You don't have access to this resource",

@@ -2,6 +2,7 @@ import CustomRouter from './custom/custom.router.js';
 import userService from '../service/users.service.js';
 import { loginSchema, registerSchema } from '../validations/auth.validation.js';
 import validateEmailNPass from '../middlewares/emailPass.middleware.js';
+import sessionService from '../service/sessions.service.js';
 
 export default class UserRouter extends CustomRouter {
   init() {
@@ -30,7 +31,22 @@ export default class UserRouter extends CustomRouter {
         if (result.errorBool) {
           return res.status(result.errorStatus).json(result);
         }
+
         res.cookie('access_token', result.data.token, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 15 * 60 * 1000, // 15 minutes
+          path: '/',
+        });
+        res.cookie('accessToken', result.data.accessToken, {
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 15 * 60 * 1000, // 15 minutes
+          path: '/',
+        });
+        res.cookie('sessionToken', result.data.sessionToken, {
           httpOnly: true,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',
@@ -47,13 +63,20 @@ export default class UserRouter extends CustomRouter {
     );
 
     this.post('/verify-token', ['API'], [], async (req, res) => {
-      const token = req.body.token;
-      if (!token) {
+      const { sessionToken, accessToken } = req.body;
+
+      if (!sessionToken) {
         return res
           .status(400)
           .json({ errorBool: true, message: 'Token is required' });
       }
-      const user = await userService.getUserByJWTToken(token);
+      const user = await sessionService.verifySession({
+        accessToken,
+        sessionToken,
+      });
+      console.log(user);
+
+      // const user = await userService.getUserByJWTToken(token);
       if (!user) {
         return res
           .status(401)
@@ -63,7 +86,23 @@ export default class UserRouter extends CustomRouter {
     });
 
     this.get('/logout', ['API', 'USERS'], [], async (req, res) => {
+      const sessionToken = req.cookies.sessionToken;
+      console.log('ruta log: ', sessionToken);
+
+      const result = await sessionService.destroySession({ sessionToken });
       res.clearCookie('access_token', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+      });
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+      });
+      res.clearCookie('sessionToken', {
         httpOnly: true,
         sameSite: 'lax',
         secure: true,

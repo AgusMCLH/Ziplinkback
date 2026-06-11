@@ -8,16 +8,14 @@ const sessionSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    refreshTokenHash: {
+    tokenHash: {
       type: String,
       required: true,
       unique: true,
       index: true,
     },
-    userAgent: { type: String },
-    ip: { type: String },
+
     expiresAt: { type: Date, required: true, index: true },
-    revokedAt: { type: Date },
   },
   { timestamps: true, versionKey: false },
 );
