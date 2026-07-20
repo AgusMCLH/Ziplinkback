@@ -20,6 +20,6 @@ const sessionSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false },
 );
 
-sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 100 });
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model('Session', sessionSchema);

@@ -23,6 +23,10 @@ class LinkClickService {
     };
     return await linkClickDAO.createLinkClick(linkId, userAgentInfo);
   }
+
+  async getSummary(userId) {
+    return linkClickDAO.getSummaryByUserId(userId);
+  }
 }
 
 const linkClickService = new LinkClickService();

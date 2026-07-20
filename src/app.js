@@ -15,9 +15,22 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl) only in development
+      if (!origin) {
+        if (config.NODE_ENV === 'development') return callback(null, true);
+        return callback(new Error('Origin required'), false);
+      }
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`), false);
+    },
     credentials: true,
   }),
 );

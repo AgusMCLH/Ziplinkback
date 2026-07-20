@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import sessionModel from '../../models/session.model.js';
 
 export default class CustomRouter {
   constructor() {
@@ -8,113 +10,85 @@ export default class CustomRouter {
   }
 
   init() {}
-
-  getRouter() {
-    return this.router;
-  }
+  getRouter() { return this.router; }
 
   get(path, policies, middlewares, ...callback) {
-    this.router.get(
-      path,
-      this.#handlerPolicies(policies),
-      this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback)
-    );
+    this.router.get(path, this.#handlerPolicies(policies), this.#handelerMiddleware(middlewares), this.#applyCallback(callback));
   }
-
   post(path, policies, middlewares, ...callback) {
-    this.router.post(
-      path,
-      this.#handlerPolicies(policies),
-      this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback)
-    );
+    this.router.post(path, this.#handlerPolicies(policies), this.#handelerMiddleware(middlewares), this.#applyCallback(callback));
   }
-
   put(path, policies, middlewares, ...callback) {
-    this.router.put(
-      path,
-      this.#handlerPolicies(policies),
-      this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback)
-    );
+    this.router.put(path, this.#handlerPolicies(policies), this.#handelerMiddleware(middlewares), this.#applyCallback(callback));
   }
-
   delete(path, policies, middlewares, ...callback) {
-    this.router.delete(
-      path,
-      this.#handlerPolicies(policies),
-      this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback)
-    );
+    this.router.delete(path, this.#handlerPolicies(policies), this.#handelerMiddleware(middlewares), this.#applyCallback(callback));
   }
 
   #applyCallback(callbacks) {
-    if (callbacks.length > 1) {
-      callbacks = [callbacks[callbacks.length - 1]]; //Si hay mas de un callback, se toma el ultimo
-    }
+    if (callbacks.length > 1) callbacks = [callbacks[callbacks.length - 1]];
     return callbacks.map((callback) => async (...params) => {
       try {
-        await callback.apply(this, params); //Se ejecuta el callback
+        await callback.apply(this, params);
       } catch (error) {
-        console.log(error);
-        params[1].status(500).send({ status: 'Internal Server Error', error }); //Si hay un error, se muestra un mensaje de error
+        console.error('[router] unhandled error:', error?.message);
+        params[1].status(500).json({ status: 'Internal Server Error' });
       }
     });
   }
 
-  #handlerPolicies = (policies) => (req, res, next) => {
-    policies = policies.length === 0 ? ['PUBLIC'] : policies; //Si no se especifica ninguna politica, se asigna PUBLIC por defecto
-    if (policies[0] === 'PUBLIC') return next(); //Si la politica es PUBLIC, se permite el acceso sin verificar el token
-    let evaluated = true;
-    policies.forEach((policy) => {
-      switch (policy) {
-        case 'USERS':
-          try {
-            const token = req.cookies?.access_token || req.headers?.authorization?.split(' ')[1]; //Se busca el token en las cookies o en los headers
-            if (req.originalUrl === '/api/users/logout')
-              if (!token) {
-                return (evaluated = false);
-              }
+  #handlerPolicies = (policies) => async (req, res, next) => {
+    policies = policies.length === 0 ? ['PUBLIC'] : policies;
+    if (policies[0] === 'PUBLIC') return next();
 
-            const payload = jwt.verify(token, process.env.JWT_SECRET);
-            req.userId = payload.sub;
+    let authorized = true;
 
-            return;
-          } catch (err) {
-            return (evaluated = false);
+    for (const policy of policies) {
+      if (policy === 'USERS') {
+        try {
+          const token = req.cookies?.access_token || req.headers?.authorization?.split(' ')[1];
+          if (!token) { authorized = false; break; }
+
+          const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+          req.userId = payload.sub;
+
+          // If the BFF forwards x-session-token, verify the session is still active in DB
+          const sessionToken = req.headers?.['x-session-token'];
+          if (sessionToken) {
+            const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
+            const session = await sessionModel.findOne({ tokenHash }).lean();
+            if (!session || session.expiresAt < new Date()) {
+              authorized = false;
+              break;
+            }
           }
-        case 'API':
-          const apiKey = req.headers['x-api-key'];
-
-          if (!apiKey || apiKey !== process.env.APIKEY) {
-            return (evaluated = false);
-          }
-          return;
+        } catch {
+          authorized = false;
+          break;
+        }
+      } else if (policy === 'API') {
+        const apiKey = req.headers['x-api-key'];
+        if (!apiKey || apiKey !== process.env.APIKEY) {
+          authorized = false;
+          break;
+        }
       }
-    });
-    if (!evaluated) {
-      console.log('Conection tried failed', {
-        url: req.originalUrl,
-        method: req.method,
-        headers: req.headers,
-        cookies: req.cookies,
-      });
-      // req.cookies.accessToken = token || undefined;
-      return res.status(403).json({
-        status: 'Forbidden',
-        message: "You don't have access to this resource",
-      }); //Si no se cumple ninguna politica, se muestra un mensaje de error
+    }
+
+    if (!authorized) {
+      return res.status(403).json({ status: 'Forbidden', message: "You don't have access to this resource" });
     }
     next();
   };
 
   #handelerMiddleware = (middlewares) => (req, res, next) => {
-    if (middlewares.length === 0) {
-      next(); //Si no hay middlewares, se pasa al siguiente
-    }
-    middlewares.forEach((middleware) => {
-      middleware(req, res, next); //Se recorren los middlewares y se ejecutan
-    });
+    if (middlewares.length === 0) return next();
+    let index = 0;
+    const runNext = (err) => {
+      if (err) return next(err);
+      if (index >= middlewares.length) return next();
+      middlewares[index++](req, res, runNext);
+    };
+    runNext();
   };
 }

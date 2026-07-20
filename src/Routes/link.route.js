@@ -15,7 +15,6 @@ export default class LinkRouter extends CustomRouter {
       const linkURL = req.body.linkURL || '';
       const name = req.body.name || '-NO NAME PROVIDED-';
       const status = req.body.status;
-      console.log('link: ', linkURL);
 
       const isUrlValid = createLinkSchema.safeParse({ linkURL });
       if (!isUrlValid.success) {
@@ -77,8 +76,8 @@ export default class LinkRouter extends CustomRouter {
       res.send(updatedLink);
     });
 
-    this.delete('/', ['PUBLIC'], [], async (req, res) => {
-      res.send(`Delete link with id ${req.params.id}`);
+    this.delete('/', ['USERS'], [], async (req, res) => {
+      res.status(501).json({ message: 'Not implemented' });
     });
   }
 }

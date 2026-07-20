@@ -4,42 +4,43 @@ import userService from './users.service.js';
 import jwt from 'jsonwebtoken';
 
 class SessionService {
-  constructor() {}
   async createSession({ userID }) {
     const sessionToken = crypto.randomBytes(32).toString('hex');
-
-    const tokenHash = crypto
-      .createHash('sha256')
-      .update(sessionToken)
-      .digest('hex');
-
-    const session = await sessionDAO.createSession({
-      userID,
-      tokenHash,
-      sessionToken,
-    });
+    const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
+    const session = await sessionDAO.createSession({ userID, tokenHash });
     return { sessionObject: session, sessionToken };
   }
-  async verifySession({ accessToken, sessionToken }) {
-    if (accessToken) {
-      const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-      console.log(decoded);
-      const user = await userService.getUserById(decoded.sub);
-      return user;
-    }
-  }
-  async destroySession({ sessionToken }) {
-    const tokenHash = crypto
-      .createHash('sha256')
-      .update(sessionToken)
-      .digest('hex');
-    console.log('Service log: ', tokenHash);
 
-    const result = await sessionDAO.destroySession({ tokenHash });
-    return result;
+  async verifySession({ accessToken, sessionToken }) {
+    if (!sessionToken) return null;
+
+    const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
+    const session = await sessionDAO.getSessionByTokenHash(tokenHash);
+
+    if (!session) return null;
+    if (session.expiresAt < new Date()) {
+      await sessionDAO.destroySession({ tokenHash });
+      return null;
+    }
+
+    if (accessToken) {
+      try {
+        jwt.verify(accessToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+      } catch {
+        // accessToken expired or invalid — session is still the source of truth
+        // We still return the user based on the valid DB session
+      }
+    }
+
+    return userService.getUserById(session.user.toString());
+  }
+
+  async destroySession({ sessionToken }) {
+    if (!sessionToken) return null;
+    const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
+    return sessionDAO.destroySession({ tokenHash });
   }
 }
 
 const sessionService = new SessionService();
-
 export default sessionService;
