@@ -45,8 +45,8 @@ export default class RedirectRouter extends CustomRouter {
 
     this.post('/:id', ['API'], [], async (req, res) => {
       const { id } = req.params;
-      const referer = req.body?.referer || 'None';
-      console.log(referer);
+      const internalReferrer = req.body?.internalReferrer || 'None';
+      const personalReferrer = req.body?.personalReferrer || 'None';
 
       const userAgent = req.headers['user-agent'] || '';
       const parser = new UAParser(userAgent);
@@ -61,11 +61,8 @@ export default class RedirectRouter extends CustomRouter {
         return res.status(response.errorStatus).send(response.errorMSG);
       }
 
-      // await linkClickService.logClick(response._id, result, referer, req.ip);
-      res.status(200).json({
-        originalUrl: response.originalUrl,
-        userAgent: result,
-      });
+      await linkClickService.logClick(response._id, result, internalReferrer, personalReferrer, req.ip);
+      res.status(200).json({ ok: true });
     });
   }
 }

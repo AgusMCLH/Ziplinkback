@@ -33,8 +33,7 @@ export default class LinkRouter extends CustomRouter {
       if (urlAlreadyExists) {
         return res.status(201).send({
           userId: urlAlreadyExists.user,
-          link:
-            'http://' + process.env.DOMAIN + '/r/' + urlAlreadyExists.shortCode,
+          shortCode: urlAlreadyExists.shortCode,
           dupl: true,
         });
       }
@@ -45,9 +44,7 @@ export default class LinkRouter extends CustomRouter {
         status,
         userID: userId,
       });
-      console.log(response);
-      const link = 'http://' + process.env.DOMAIN + '/r/' + response.shortCode;
-      res.status(201).send({ userId, link });
+      res.status(201).send({ userId, shortCode: response.shortCode });
     });
 
     this.put('/', ['USERS'], [], async (req, res) => {

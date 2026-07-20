@@ -2,15 +2,18 @@ import LinkClick from '../../models/linkClick.model.js';
 import linkDAO from './link.DAO.js';
 
 class LinkClickDAO {
-  async createLinkClick(linkId, { ua, browser, deviceType, referer, ip }) {
+  async createLinkClick(linkId, { ua, browser, deviceType, internalReferrer, personalReferrer, ip, country, city }) {
     const [doc] = await LinkClick.create([
       {
         link: linkId,
-        ip: ip,
+        ip,
         userAgent: ua,
-        referer: referer,
-        browser: browser,
-        deviceType: deviceType,
+        internalReferrer,
+        personalReferrer,
+        browser,
+        deviceType,
+        country,
+        city,
       },
     ]);
     return doc;

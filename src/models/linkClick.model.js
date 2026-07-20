@@ -19,13 +19,22 @@ const linkClickSchema = new mongoose.Schema(
     userAgent: {
       type: String,
     },
-    referer: {
+    internalReferrer: {
+      type: String,
+    },
+    personalReferrer: {
       type: String,
     },
     browser: {
       type: String,
     },
     deviceType: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
+    city: {
       type: String,
     },
   },

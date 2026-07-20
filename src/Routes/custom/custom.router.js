@@ -18,7 +18,7 @@ export default class CustomRouter {
       path,
       this.#handlerPolicies(policies),
       this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback),
+      this.#applyCallback(callback)
     );
   }
 
@@ -27,7 +27,7 @@ export default class CustomRouter {
       path,
       this.#handlerPolicies(policies),
       this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback),
+      this.#applyCallback(callback)
     );
   }
 
@@ -36,7 +36,7 @@ export default class CustomRouter {
       path,
       this.#handlerPolicies(policies),
       this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback),
+      this.#applyCallback(callback)
     );
   }
 
@@ -45,7 +45,7 @@ export default class CustomRouter {
       path,
       this.#handlerPolicies(policies),
       this.#handelerMiddleware(middlewares),
-      this.#applyCallback(callback),
+      this.#applyCallback(callback)
     );
   }
 
@@ -71,9 +71,7 @@ export default class CustomRouter {
       switch (policy) {
         case 'USERS':
           try {
-            const token =
-              req.cookies?.access_token ||
-              req.headers?.authorization?.split(' ')[1]; //Se busca el token en las cookies o en los headers
+            const token = req.cookies?.access_token || req.headers?.authorization?.split(' ')[1]; //Se busca el token en las cookies o en los headers
             if (req.originalUrl === '/api/users/logout')
               if (!token) {
                 return (evaluated = false);
@@ -102,7 +100,7 @@ export default class CustomRouter {
         headers: req.headers,
         cookies: req.cookies,
       });
-      req.cookies.accessToken = token;
+      // req.cookies.accessToken = token || undefined;
       return res.status(403).json({
         status: 'Forbidden',
         message: "You don't have access to this resource",

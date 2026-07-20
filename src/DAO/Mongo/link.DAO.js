@@ -6,15 +6,7 @@ class LinkDAO {
     return Link.findOne({ shortCode }).exec();
   }
 
-  async createLink(
-    originalUrl,
-    name,
-    status,
-    user,
-    totalClicks,
-    code,
-    expireAt,
-  ) {
+  async createLink(originalUrl, name, status, user, totalClicks, code, expireAt) {
     console.log('status', status);
 
     const [doc] = await Link.create([
@@ -58,6 +50,10 @@ class LinkDAO {
     return await Link.findByIdAndUpdate(linkId, updateData, {
       new: true,
     }).exec();
+  }
+
+  async getLinksDataByUserID(userID) {
+    return Link.find({ user: userID }).select('name shortCode totalClicks active').exec();
   }
 }
 

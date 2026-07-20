@@ -12,5 +12,4 @@ export default {
     process.env.REFRESH_TOKEN_SECRET || 'super_secret_refresh_hmac',
   NODE_ENV: process.env.NODE_ENV || 'development',
   COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || 'localhost',
-  DOMAIN: process.env.DOMAIN || 'localhost:3000',
 };
