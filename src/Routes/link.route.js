@@ -1,5 +1,6 @@
 import CustomRouter from './custom/custom.router.js';
 import linkService from '../service/links.service.js';
+import userService from '../service/users.service.js';
 import { createLinkSchema } from '../validations/link.validation.js';
 
 export default class LinkRouter extends CustomRouter {
@@ -48,36 +49,50 @@ export default class LinkRouter extends CustomRouter {
 
     this.put('/', ['USERS'], [], async (req, res) => {
       const { userId } = req;
-      const { updateLinkId, active } = req.body;
+      const { updateLinkId, active, name, originalUrl } = req.body;
 
       const urlToUpdate = await linkService.getLinkById(updateLinkId);
       if (!urlToUpdate) {
-        return res.status(404).send({
-          errorBool: true,
-          errorStatus: 404,
-          message: 'Link not found',
-        });
+        return res.status(404).send({ errorBool: true, errorStatus: 404, message: 'Link not found' });
       }
-      const isUrlOwned = await linkService.getLinkByLinkIDandUserID(
-        urlToUpdate.originalUrl,
-        userId,
-      );
+      if (urlToUpdate.user.toString() !== userId) {
+        return res.status(403).send({ errorBool: true, errorStatus: 403, message: 'Forbidden' });
+      }
 
-      if (!isUrlOwned) {
-        return res.status(404).send({
-          errorBool: true,
-          errorStatus: 404,
-          message: 'Link not found',
-        });
+      const updateFields = {};
+      if (active !== undefined) updateFields.active = active;
+      if (name !== undefined) updateFields.name = String(name).trim();
+      if (originalUrl !== undefined) updateFields.originalUrl = originalUrl;
+
+      // When reactivating a link, reset expireAt so the TTL index doesn't delete it
+      if (active === true) {
+        const user = await userService.getUserById(userId);
+        const days = user?.plan === 'premium' ? 30 : 7;
+        updateFields.expireAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
       }
-      const updatedLink = await linkService.updateLink(updateLinkId, {
-        active: active,
-      });
+
+      const updatedLink = await linkService.updateLink(updateLinkId, updateFields);
       res.send(updatedLink);
     });
 
     this.delete('/', ['USERS'], [], async (req, res) => {
-      res.status(501).json({ message: 'Not implemented' });
+      const { userId } = req;
+      const { linkId } = req.body;
+
+      if (!linkId) {
+        return res.status(400).json({ errorBool: true, message: 'linkId is required' });
+      }
+
+      const link = await linkService.getLinkById(linkId);
+      if (!link) {
+        return res.status(404).json({ errorBool: true, message: 'Link not found' });
+      }
+      if (link.user.toString() !== userId) {
+        return res.status(403).json({ errorBool: true, message: 'Forbidden' });
+      }
+
+      await linkService.deleteLink(linkId);
+      res.json({ errorBool: false, message: 'Link deleted' });
     });
   }
 }

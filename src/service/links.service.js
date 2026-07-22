@@ -15,14 +15,15 @@ class LinkService {
 
   async getLinksByUserID(userID) {
     let links = await linkDAO.getLinksByUserID(userID);
+    const now = new Date();
     links = links.map((link, i) => ({
       id: i + 1,
       _id: link._id,
       name: link.name,
       shortCode: link.shortCode,
-      status: link.active ? 'Active' : 'Expired',
+      status: link.active && link.expireAt > now ? 'Active' : 'Expired',
       totalClicks: link.totalClicks,
-      expirationDate: link.expireAt ? link.expireAt.toLocaleDateString() : null, //DD/MM/YYYY
+      expirationDate: link.expireAt ? link.expireAt.toLocaleDateString() : null,
       originalURL: link.originalUrl,
     }));
     return links;
@@ -84,6 +85,10 @@ class LinkService {
 
   async updateLink(linkId, updateData) {
     return await linkDAO.updateLink(linkId, updateData);
+  }
+
+  async deleteLink(linkId) {
+    return await linkDAO.deleteLink(linkId);
   }
 }
 

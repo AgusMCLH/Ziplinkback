@@ -15,7 +15,7 @@ export default class RedirectRouter extends CustomRouter {
           .status(response.errorStatus)
           .json({ error: true, messagge: response.errorMSG, code: 'LINK-404' });
       }
-      if (!response.active) {
+      if (!response.active || response.expireAt < new Date()) {
         console.log('El link no esta activo \n', {
           error: true,
           messagge: response.errorMSG,

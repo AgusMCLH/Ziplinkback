@@ -52,6 +52,10 @@ class LinkDAO {
     }).exec();
   }
 
+  async deleteLink(id) {
+    return Link.findByIdAndDelete(id).exec();
+  }
+
   async getLinksDataByUserID(userID) {
     return Link.find({ user: userID }).select('name shortCode totalClicks active').exec();
   }
