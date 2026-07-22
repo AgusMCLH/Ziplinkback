@@ -26,8 +26,7 @@ export default class UserRouter extends CustomRouter {
         path: '/',
       };
 
-      res.cookie('access_token', result.data.token, { ...cookieOpts, maxAge: 60 * 60 * 1000 }); // 1h = JWT_EXPIRES_IN
-      res.cookie('accessToken', result.data.accessToken, { ...cookieOpts, maxAge: 15 * 60 * 1000 });
+      res.cookie('access_token', result.data.token, { ...cookieOpts, maxAge: 60 * 60 * 1000 });
       res.cookie('sessionToken', result.data.sessionToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
       return res.json({ errorBool: false, message: 'Login success', data: { user: result.data.user } });
@@ -55,7 +54,6 @@ export default class UserRouter extends CustomRouter {
       }
       const cookieOpts = { httpOnly: true, sameSite: 'lax', secure: true, path: '/' };
       res.clearCookie('access_token', cookieOpts);
-      res.clearCookie('accessToken', cookieOpts);
       res.clearCookie('sessionToken', cookieOpts);
       res.json({ status: 'success', message: 'Logged out successfully' });
     });
