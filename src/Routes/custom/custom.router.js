@@ -2,6 +2,7 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import sessionModel from '../../models/session.model.js';
+import config from '../../config/env.config.js';
 
 export default class CustomRouter {
   constructor() {
@@ -46,18 +47,26 @@ export default class CustomRouter {
     for (const policy of policies) {
       if (policy === 'USERS') {
         try {
-          const token = req.cookies?.access_token || req.headers?.authorization?.split(' ')[1];
+          let token = req.cookies?.access_token;
+          if (!token) {
+            const authHeader = req.headers?.authorization;
+            if (authHeader) {
+              const parts = authHeader.split(' ');
+              if (parts.length === 2 && parts[0] === 'Bearer' && parts[1]) {
+                token = parts[1];
+              }
+            }
+          }
           if (!token) { authorized = false; break; }
 
-          const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+          const payload = jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] });
           req.userId = payload.sub;
 
-          // If the BFF forwards x-session-token, verify the session is still active in DB
           const sessionToken = req.headers?.['x-session-token'];
           if (sessionToken) {
             const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
             const session = await sessionModel.findOne({ tokenHash }).lean();
-            if (!session || session.expiresAt < new Date()) {
+            if (!session || session.expiresAt.getTime() < Date.now()) {
               authorized = false;
               break;
             }
@@ -68,7 +77,7 @@ export default class CustomRouter {
         }
       } else if (policy === 'API') {
         const apiKey = req.headers['x-api-key'];
-        if (!apiKey || apiKey !== process.env.APIKEY) {
+        if (!apiKey || apiKey !== config.APIKEY) {
           authorized = false;
           break;
         }

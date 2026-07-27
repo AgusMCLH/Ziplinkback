@@ -14,7 +14,7 @@ export default class LinkRouter extends CustomRouter {
     this.post('/', ['USERS'], [], async (req, res) => {
       const { userId } = req;
       const linkURL = req.body.linkURL || '';
-      const name = req.body.name || '-NO NAME PROVIDED-';
+      const name = String(req.body.name || '').trim().slice(0, 200) || null;
       const status = req.body.status;
 
       const isUrlValid = createLinkSchema.safeParse({ linkURL });
@@ -61,8 +61,17 @@ export default class LinkRouter extends CustomRouter {
 
       const updateFields = {};
       if (active !== undefined) updateFields.active = active;
-      if (name !== undefined) updateFields.name = String(name).trim();
-      if (originalUrl !== undefined) updateFields.originalUrl = originalUrl;
+      if (name !== undefined) {
+        const trimmedName = String(name).trim().slice(0, 200);
+        updateFields.name = trimmedName;
+      }
+      if (originalUrl !== undefined) {
+        const parsed = createLinkSchema.safeParse({ linkURL: originalUrl });
+        if (!parsed.success) {
+          return res.status(400).json({ errorBool: true, message: 'Invalid URL format' });
+        }
+        updateFields.originalUrl = parsed.data.linkURL;
+      }
 
       // When reactivating a link, reset expireAt so the TTL index doesn't delete it
       if (active === true) {

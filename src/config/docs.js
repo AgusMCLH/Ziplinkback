@@ -1,5 +1,3 @@
-import { required } from 'zod/mini';
-
 const SwaggerOptions = {
   definition: {
     openapi: '3.1.0',

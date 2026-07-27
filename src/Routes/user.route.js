@@ -52,7 +52,7 @@ export default class UserRouter extends CustomRouter {
       if (sessionToken) {
         await sessionService.destroySession({ sessionToken });
       }
-      const cookieOpts = { httpOnly: true, sameSite: 'lax', secure: true, path: '/' };
+      const cookieOpts = { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' };
       res.clearCookie('access_token', cookieOpts);
       res.clearCookie('sessionToken', cookieOpts);
       res.json({ status: 'success', message: 'Logged out successfully' });

@@ -11,7 +11,7 @@ export const loginLimiter = rateLimit({
 
 export const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
+  max: 3,
   standardHeaders: true,
   legacyHeaders: false,
   message: { status: 'error', message: 'Too many accounts created from this IP, please try again later.' },

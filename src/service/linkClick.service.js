@@ -4,7 +4,7 @@ import linkService from './links.service.js';
 class LinkClickService {
   async logClick(linkId, UAInfo, internalReferrer, personalReferrer, ip, country, city) {
     const res = await linkService.incrementClickCount(linkId);
-    if (res.errorBool) {
+    if (!res || res.errorBool) {
       return {
         errorBool: true,
         errorStatus: res.errorStatus,

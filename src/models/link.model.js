@@ -8,7 +8,7 @@ const linkSchema = new mongoose.Schema(
     },
     name: {
       type: String,
-      default: 'NO NAME',
+      default: null,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

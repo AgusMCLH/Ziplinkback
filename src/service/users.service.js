@@ -14,7 +14,11 @@ class UserService {
   }
 
   async getUserById(userId) {
-    return userDAO.findById(userId);
+    try {
+      return await userDAO.findById(userId);
+    } catch {
+      return null;
+    }
   }
 
   async register({ email, password, name }) {
@@ -95,7 +99,10 @@ class UserService {
     try {
       const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
       return userDAO.findById(payload.sub);
-    } catch {
+    } catch (err) {
+      if (err?.name !== 'JsonWebTokenError' && err?.name !== 'TokenExpiredError') {
+        console.error('[getUserByJWTToken] unexpected error:', err?.message);
+      }
       return null;
     }
   }

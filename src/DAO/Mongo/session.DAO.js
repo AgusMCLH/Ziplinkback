@@ -1,4 +1,5 @@
 import sessionModel from '../../models/session.model.js';
+import config from '../../config/env.config.js';
 
 class SessionDAO {
   async getSessionByTokenHash(tokenHash) {
@@ -9,7 +10,7 @@ class SessionDAO {
     const session = await sessionModel.create({
       user: userID,
       tokenHash,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + config.SESSION_TTL_MS),
     });
     return session;
   }

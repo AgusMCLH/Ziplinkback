@@ -1,4 +1,3 @@
-import { length } from 'zod';
 import Link from './../../models/link.model.js';
 
 class LinkDAO {
@@ -7,8 +6,6 @@ class LinkDAO {
   }
 
   async createLink(originalUrl, name, status, user, totalClicks, code, expireAt) {
-    console.log('status', status);
-
     const [doc] = await Link.create([
       {
         originalUrl,
@@ -32,14 +29,11 @@ class LinkDAO {
   }
 
   async getLinkByLinkIDandUserID(linkId, userID) {
-    let result = await Link.findOne({
-      originalUrl: { $regex: linkId, $options: 'i' },
+    const result = await Link.findOne({
+      originalUrl: { $eq: linkId },
       user: userID,
     }).exec();
-    if (result === null || result === undefined || result === false) {
-      result = false;
-    }
-    return result;
+    return result ?? null;
   }
 
   async updateClickCount(linkId) {

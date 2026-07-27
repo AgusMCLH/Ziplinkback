@@ -21,7 +21,7 @@ class LinkService {
       _id: link._id,
       name: link.name,
       shortCode: link.shortCode,
-      status: link.active && link.expireAt > now ? 'Active' : 'Expired',
+      status: link.active && (!link.expireAt || link.expireAt.getTime() > now.getTime()) ? 'Active' : 'Expired',
       totalClicks: link.totalClicks,
       expirationDate: link.expireAt ? link.expireAt.toLocaleDateString() : null,
       originalURL: link.originalUrl,
@@ -51,24 +51,23 @@ class LinkService {
         errorMSG: 'User not found',
       };
     }
+    const validStatuses = [true, false, 'active', 'inactive'];
+    const resolvedStatus = validStatuses.includes(status) ? status : true;
     const days = user.plan === 'premium' ? 30 : 7;
     const expireAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    let code = this.createShortCode();
-    const existing = await linkDAO.findByShortCode(code);
-    while (existing) {
-      code = this.createShortCode();
-      existing = await linkDAO.findByShortCode(code);
+
+    const MAX_RETRIES = 5;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const code = this.createShortCode();
+      try {
+        const result = await linkDAO.createLink(originalURL, name, resolvedStatus, userID, 0, code, expireAt);
+        return result;
+      } catch (err) {
+        if (err?.code !== 11000 || attempt === MAX_RETRIES - 1) {
+          return { errorBool: true, errorStatus: 500, errorMSG: 'Failed to create link' };
+        }
+      }
     }
-    const result = await linkDAO.createLink(
-      originalURL,
-      name,
-      status,
-      userID,
-      0,
-      code,
-      expireAt,
-    );
-    return result;
   }
 
   async incrementClickCount(linkId) {

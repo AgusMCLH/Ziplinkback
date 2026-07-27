@@ -41,6 +41,8 @@ class LinkClickDAO {
   }
 
   async getCampaignsByLink(userId, linkId) {
+    if (!mongoose.Types.ObjectId.isValid(linkId)) return null;
+
     const links = await linkDAO.getLinksByUserID(userId);
     const owned = links.find((l) => l._id.toString() === linkId);
     if (!owned) return null;
@@ -144,6 +146,8 @@ class LinkClickDAO {
   }
 
   async getLinkStats(userId, linkId) {
+    if (!mongoose.Types.ObjectId.isValid(linkId)) return null;
+
     const links = await linkDAO.getLinksByUserID(userId);
     const owned = links.find((l) => l._id.toString() === linkId);
     if (!owned) return null;
@@ -231,8 +235,6 @@ class LinkClickDAO {
       };
     }
 
-    console.log('[summary] userId:', userId, '| links found:', linkIds.length, '| IDs:', linkIds.map(String));
-
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
@@ -280,18 +282,17 @@ class LinkClickDAO {
       },
     ]);
 
-    console.log('[summary] allTimeStats:', result.allTimeStats, '| byCountry count:', result.byCountry.length, '| chartData count:', result.chartData.length);
-    const statsRaw = result.allTimeStats[0] || { totalClicks: 0, mobileClicks: 0 };
+    const statsRaw = result?.allTimeStats?.[0] || { totalClicks: 0, mobileClicks: 0 };
     const totalClicks = statsRaw.totalClicks;
     const mobilePercent = totalClicks > 0
       ? Math.round((statsRaw.mobileClicks / totalClicks) * 100)
       : 0;
 
     const chartMap = {};
-    result.chartData.forEach(({ _id: { date, deviceType }, count }) => {
+    (result?.chartData || []).forEach(({ _id: { date, deviceType }, count }) => {
       if (!chartMap[date]) chartMap[date] = { date, desktop: 0, mobile: 0 };
       if (deviceType === 'mobile') chartMap[date].mobile += count;
-      else chartMap[date].desktop += count; // 'desktop', 'Unknown', 'tablet', etc.
+      else chartMap[date].desktop += count;
     });
 
     return {
@@ -300,12 +301,12 @@ class LinkClickDAO {
         mobilePercent,
         activeLinks,
         expiredLinks,
-        topReferrer: result.byReferrer[0]?._id || 'None',
+        topReferrer: result?.byReferrer?.[0]?._id || 'None',
       },
       chartData: Object.values(chartMap).sort((a, b) => a.date.localeCompare(b.date)),
-      byCountry: result.byCountry.map(({ _id, clicks }) => ({ code: _id, clicks })),
-      byCampaign: result.byCampaign.map(({ _id, clicks }) => ({ personalReferrer: _id, clicks })),
-      byReferrer: result.byReferrer.map(({ _id, clicks }) => ({ referrer: _id, clicks })),
+      byCountry: (result?.byCountry || []).map(({ _id, clicks }) => ({ code: _id, clicks })),
+      byCampaign: (result?.byCampaign || []).map(({ _id, clicks }) => ({ personalReferrer: _id, clicks })),
+      byReferrer: (result?.byReferrer || []).map(({ _id, clicks }) => ({ referrer: _id, clicks })),
     };
   }
 }
