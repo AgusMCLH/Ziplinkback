@@ -4,13 +4,20 @@ import userService from './users.service.js';
 class LinkService {
   constructor() {}
   createShortCode() {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let shortCode = '';
-    for (let i = 0; i < 6; i++) {
-      shortCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const all = letters + digits;
+
+    // Guarantee at least 2 digits in the 6-char code
+    const pick = (set) => set.charAt(Math.floor(Math.random() * set.length));
+    const chars = [pick(digits), pick(digits), pick(all), pick(all), pick(all), pick(all)];
+
+    // Fisher-Yates shuffle so digits aren't always at fixed positions
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [chars[i], chars[j]] = [chars[j], chars[i]];
     }
-    return shortCode;
+    return chars.join('');
   }
 
   async getLinksByUserID(userID) {

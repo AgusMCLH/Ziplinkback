@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       enum: ['standard', 'premium'],
       default: 'standard',
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

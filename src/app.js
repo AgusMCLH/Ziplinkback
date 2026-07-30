@@ -9,6 +9,7 @@ import RedirectRouter from './Routes/redirect.route.js';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import LinkClickRouter from './Routes/linkClick.route.js';
+import AdminRouter from './Routes/admin.route.js';
 import SwaggerOptions from './config/docs.js';
 
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/users', new UserRouter().getRouter());
 app.use('/api/links', new LinkRouter().getRouter());
 app.use('/api/linkdetails', new LinkClickRouter().getRouter());
 app.use('/r', new RedirectRouter().getRouter());
+app.use('/api/admin', new AdminRouter().getRouter());
 
 app.listen(config.PORT, () => {
   console.log(`Server is running on port ${config.PORT}`);

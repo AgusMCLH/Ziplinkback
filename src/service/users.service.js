@@ -53,6 +53,10 @@ class UserService {
         return { errorBool: true, errorStatus: 401, errorMSG: 'Invalid credentials' };
       }
 
+      if (user.disabled) {
+        return { errorBool: true, errorStatus: 403, errorMSG: 'Account disabled' };
+      }
+
       const ok = await bcrypt.compare(String(password), user.password);
       if (!ok) {
         return { errorBool: true, errorStatus: 401, errorMSG: 'Invalid credentials' };
